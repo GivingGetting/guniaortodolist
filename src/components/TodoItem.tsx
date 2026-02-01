@@ -1,4 +1,4 @@
-import { Check, Trash2, Clock, AlertTriangle } from "lucide-react";
+import { Check, Trash2, Clock, AlertTriangle, Pencil } from "lucide-react";
 import { format, isToday, isTomorrow, isPast, differenceInDays } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ interface TodoItemProps {
   dueDate?: Date;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
 }
 
 const getDueDateInfo = (dueDate: Date, completed: boolean) => {
@@ -65,7 +66,7 @@ const getDueDateInfo = (dueDate: Date, completed: boolean) => {
   };
 };
 
-const TodoItem = ({ id, text, completed, dueDate, onToggle, onDelete }: TodoItemProps) => {
+const TodoItem = ({ id, text, completed, dueDate, onToggle, onDelete, onEdit }: TodoItemProps) => {
   const dueDateInfo = dueDate ? getDueDateInfo(dueDate, completed) : null;
   const DueDateIcon = dueDateInfo?.icon;
 
@@ -108,6 +109,18 @@ const TodoItem = ({ id, text, completed, dueDate, onToggle, onDelete }: TodoItem
           </div>
         )}
       </div>
+
+      <button
+        onClick={() => onEdit(id)}
+        className={cn(
+          "opacity-0 group-hover:opacity-100 p-2 rounded-lg shrink-0",
+          "text-muted-foreground hover:text-primary hover:bg-primary/10",
+          "transition-all duration-200"
+        )}
+        aria-label="编辑任务"
+      >
+        <Pencil className="w-4 h-4" />
+      </button>
 
       <button
         onClick={() => onDelete(id)}
