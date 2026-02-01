@@ -9,7 +9,12 @@ import { useTodos } from "@/hooks/useTodos";
 const Index = () => {
   const { todos, filter, setFilter, addTodo, toggleTodo, updateTodo, deleteTodo, counts } =
     useTodos();
-  const [editingTodo, setEditingTodo] = useState<{ id: string; text: string; dueDate?: Date } | null>(null);
+  const [editingTodo, setEditingTodo] = useState<{
+    id: string;
+    text: string;
+    dueDate?: Date;
+    priority: "high" | "medium" | "low";
+  } | null>(null);
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 sm:py-16">
@@ -49,12 +54,18 @@ const Index = () => {
                 text={todo.text}
                 completed={todo.completed}
                 dueDate={todo.dueDate}
+                priority={todo.priority}
                 onToggle={toggleTodo}
                 onDelete={deleteTodo}
                 onEdit={(id) => {
                   const todoToEdit = todos.find((t) => t.id === id);
                   if (todoToEdit) {
-                    setEditingTodo({ id, text: todoToEdit.text, dueDate: todoToEdit.dueDate });
+                    setEditingTodo({
+                      id,
+                      text: todoToEdit.text,
+                      dueDate: todoToEdit.dueDate,
+                      priority: todoToEdit.priority,
+                    });
                   }
                 }}
               />
@@ -76,9 +87,10 @@ const Index = () => {
         onOpenChange={(open) => !open && setEditingTodo(null)}
         initialText={editingTodo?.text || ""}
         initialDueDate={editingTodo?.dueDate}
-        onSave={(text, dueDate) => {
+        initialPriority={editingTodo?.priority || "medium"}
+        onSave={(text, dueDate, priority) => {
           if (editingTodo) {
-            updateTodo(editingTodo.id, text, dueDate);
+            updateTodo(editingTodo.id, text, dueDate, priority);
             setEditingTodo(null);
           }
         }}
