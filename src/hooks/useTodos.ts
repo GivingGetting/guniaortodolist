@@ -65,6 +65,16 @@ export const useTodos = () => {
     });
   }, []);
 
+  const updateTodo = useCallback((id: string, text: string, dueDate?: Date) => {
+    setTodos((prev) => {
+      const updated = prev.map((todo) =>
+        todo.id === id ? { ...todo, text, dueDate } : todo
+      );
+      saveTodos(updated);
+      return updated;
+    });
+  }, []);
+
   const deleteTodo = useCallback((id: string) => {
     setTodos((prev) => {
       const updated = prev.filter((todo) => todo.id !== id);
@@ -99,6 +109,7 @@ export const useTodos = () => {
     setFilter,
     addTodo,
     toggleTodo,
+    updateTodo,
     deleteTodo,
     counts,
   };

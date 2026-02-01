@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { ClipboardList } from "lucide-react";
 import TodoInput from "@/components/TodoInput";
 import TodoItem from "@/components/TodoItem";
 import TodoFilter from "@/components/TodoFilter";
+import TodoEditDialog from "@/components/TodoEditDialog";
 import { useTodos } from "@/hooks/useTodos";
 
 const Index = () => {
-  const { todos, filter, setFilter, addTodo, toggleTodo, deleteTodo, counts } =
+  const { todos, filter, setFilter, addTodo, toggleTodo, updateTodo, deleteTodo, counts } =
     useTodos();
+  const [editingTodo, setEditingTodo] = useState<{ id: string; text: string; dueDate?: Date } | null>(null);
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 sm:py-16">
@@ -48,6 +51,12 @@ const Index = () => {
                 dueDate={todo.dueDate}
                 onToggle={toggleTodo}
                 onDelete={deleteTodo}
+                onEdit={(id) => {
+                  const todoToEdit = todos.find((t) => t.id === id);
+                  if (todoToEdit) {
+                    setEditingTodo({ id, text: todoToEdit.text, dueDate: todoToEdit.dueDate });
+                  }
+                }}
               />
             ))
           )}
@@ -60,6 +69,20 @@ const Index = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Dialog */}
+      <TodoEditDialog
+        open={!!editingTodo}
+        onOpenChange={(open) => !open && setEditingTodo(null)}
+        initialText={editingTodo?.text || ""}
+        initialDueDate={editingTodo?.dueDate}
+        onSave={(text, dueDate) => {
+          if (editingTodo) {
+            updateTodo(editingTodo.id, text, dueDate);
+            setEditingTodo(null);
+          }
+        }}
+      />
     </div>
   );
 };
