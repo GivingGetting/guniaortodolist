@@ -6,6 +6,7 @@ export interface Todo {
   text: string;
   completed: boolean;
   createdAt: Date;
+  dueDate?: Date;
 }
 
 const STORAGE_KEY = "lovable-todos";
@@ -18,6 +19,7 @@ const loadTodos = (): Todo[] => {
       return parsed.map((todo: Todo) => ({
         ...todo,
         createdAt: new Date(todo.createdAt),
+        dueDate: todo.dueDate ? new Date(todo.dueDate) : undefined,
       }));
     }
   } catch (e) {
@@ -38,12 +40,13 @@ export const useTodos = () => {
   const [todos, setTodos] = useState<Todo[]>(loadTodos);
   const [filter, setFilter] = useState<FilterType>("all");
 
-  const addTodo = useCallback((text: string) => {
+  const addTodo = useCallback((text: string, dueDate?: Date) => {
     const newTodo: Todo = {
       id: crypto.randomUUID(),
       text,
       completed: false,
       createdAt: new Date(),
+      dueDate,
     };
     setTodos((prev) => {
       const updated = [newTodo, ...prev];
