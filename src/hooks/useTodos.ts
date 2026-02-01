@@ -1,12 +1,15 @@
 import { useState, useCallback, useMemo } from "react";
 import type { FilterType } from "@/components/TodoFilter";
 
+export type Priority = "high" | "medium" | "low";
+
 export interface Todo {
   id: string;
   text: string;
   completed: boolean;
   createdAt: Date;
   dueDate?: Date;
+  priority: Priority;
 }
 
 const STORAGE_KEY = "lovable-todos";
@@ -40,13 +43,14 @@ export const useTodos = () => {
   const [todos, setTodos] = useState<Todo[]>(loadTodos);
   const [filter, setFilter] = useState<FilterType>("all");
 
-  const addTodo = useCallback((text: string, dueDate?: Date) => {
+  const addTodo = useCallback((text: string, dueDate?: Date, priority: Priority = "medium") => {
     const newTodo: Todo = {
       id: crypto.randomUUID(),
       text,
       completed: false,
       createdAt: new Date(),
       dueDate,
+      priority,
     };
     setTodos((prev) => {
       const updated = [newTodo, ...prev];
@@ -65,10 +69,10 @@ export const useTodos = () => {
     });
   }, []);
 
-  const updateTodo = useCallback((id: string, text: string, dueDate?: Date) => {
+  const updateTodo = useCallback((id: string, text: string, dueDate?: Date, priority: Priority = "medium") => {
     setTodos((prev) => {
       const updated = prev.map((todo) =>
-        todo.id === id ? { ...todo, text, dueDate } : todo
+        todo.id === id ? { ...todo, text, dueDate, priority } : todo
       );
       saveTodos(updated);
       return updated;

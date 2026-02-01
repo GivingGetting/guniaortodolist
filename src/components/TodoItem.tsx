@@ -1,17 +1,25 @@
-import { Check, Trash2, Clock, AlertTriangle, Pencil } from "lucide-react";
+import { Check, Trash2, Clock, AlertTriangle, Pencil, Flag } from "lucide-react";
 import { format, isToday, isTomorrow, isPast, differenceInDays } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import type { Priority } from "@/hooks/useTodos";
 
 interface TodoItemProps {
   id: string;
   text: string;
   completed: boolean;
   dueDate?: Date;
+  priority: Priority;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
 }
+
+const priorityConfig = {
+  high: { label: "高", color: "text-red-500", border: "border-l-red-500" },
+  medium: { label: "中", color: "text-amber-500", border: "border-l-amber-500" },
+  low: { label: "低", color: "text-blue-500", border: "border-l-blue-500" },
+};
 
 const getDueDateInfo = (dueDate: Date, completed: boolean) => {
   const now = new Date();
@@ -66,16 +74,17 @@ const getDueDateInfo = (dueDate: Date, completed: boolean) => {
   };
 };
 
-const TodoItem = ({ id, text, completed, dueDate, onToggle, onDelete, onEdit }: TodoItemProps) => {
+const TodoItem = ({ id, text, completed, dueDate, priority, onToggle, onDelete, onEdit }: TodoItemProps) => {
   const dueDateInfo = dueDate ? getDueDateInfo(dueDate, completed) : null;
   const DueDateIcon = dueDateInfo?.icon;
 
   return (
     <div
       className={cn(
-        "group flex items-center gap-4 p-4 rounded-lg bg-card",
+        "group flex items-center gap-4 p-4 rounded-lg bg-card border-l-4",
         "shadow-soft hover:shadow-medium transition-all duration-200",
         "todo-item-enter",
+        priorityConfig[priority].border,
         completed && "opacity-60"
       )}
     >
@@ -94,14 +103,17 @@ const TodoItem = ({ id, text, completed, dueDate, onToggle, onDelete, onEdit }: 
       </button>
 
       <div className="flex-1 min-w-0">
-        <span
-          className={cn(
-            "block text-foreground transition-all duration-200",
-            completed && "line-through text-muted-foreground"
-          )}
-        >
-          {text}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              "text-foreground transition-all duration-200",
+              completed && "line-through text-muted-foreground"
+            )}
+          >
+            {text}
+          </span>
+          <Flag className={cn("w-3.5 h-3.5 shrink-0", priorityConfig[priority].color)} />
+        </div>
         {dueDateInfo && DueDateIcon && (
           <div className={cn("flex items-center gap-1 mt-1 text-sm", dueDateInfo.className)}>
             <DueDateIcon className="w-3.5 h-3.5" />
