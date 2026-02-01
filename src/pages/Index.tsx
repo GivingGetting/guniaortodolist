@@ -45,6 +45,7 @@ const Index = () => {
                 id={todo.id}
                 text={todo.text}
                 completed={todo.completed}
+                dueDate={todo.dueDate}
                 onToggle={toggleTodo}
                 onDelete={deleteTodo}
               />
