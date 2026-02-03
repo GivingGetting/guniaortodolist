@@ -1,13 +1,27 @@
 import { useState } from "react";
 import { ClipboardList } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import TodoInput from "@/components/TodoInput";
-import TodoItem from "@/components/TodoItem";
+import SortableTodoItem from "@/components/SortableTodoItem";
 import TodoFilter from "@/components/TodoFilter";
 import TodoEditDialog from "@/components/TodoEditDialog";
 import { useTodos } from "@/hooks/useTodos";
 
 const Index = () => {
-  const { todos, filter, setFilter, addTodo, toggleTodo, updateTodo, deleteTodo, counts } =
+  const { todos, filter, setFilter, addTodo, toggleTodo, updateTodo, deleteTodo, reorderTodos, counts } =
     useTodos();
   const [editingTodo, setEditingTodo] = useState<{
     id: string;
@@ -15,6 +29,24 @@ const Index = () => {
     dueDate?: Date;
     priority: "high" | "medium" | "low";
   } | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      reorderTodos(active.id as string, over.id as string);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 sm:py-16">
@@ -35,43 +67,54 @@ const Index = () => {
         <TodoFilter filter={filter} onFilterChange={setFilter} counts={counts} />
 
         {/* Todo List */}
-        <div className="space-y-3">
-          {todos.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-lg">
-                {filter === "all"
-                  ? "还没有任务，添加一个吧！"
-                  : filter === "active"
-                  ? "没有进行中的任务"
-                  : "还没有完成的任务"}
-              </p>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={todos.map((t) => t.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-3">
+              {todos.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p className="text-lg">
+                    {filter === "all"
+                      ? "还没有任务，添加一个吧！"
+                      : filter === "active"
+                      ? "没有进行中的任务"
+                      : "还没有完成的任务"}
+                  </p>
+                </div>
+              ) : (
+                todos.map((todo) => (
+                  <SortableTodoItem
+                    key={todo.id}
+                    id={todo.id}
+                    text={todo.text}
+                    completed={todo.completed}
+                    dueDate={todo.dueDate}
+                    priority={todo.priority}
+                    onToggle={toggleTodo}
+                    onDelete={deleteTodo}
+                    onEdit={(id) => {
+                      const todoToEdit = todos.find((t) => t.id === id);
+                      if (todoToEdit) {
+                        setEditingTodo({
+                          id,
+                          text: todoToEdit.text,
+                          dueDate: todoToEdit.dueDate,
+                          priority: todoToEdit.priority,
+                        });
+                      }
+                    }}
+                  />
+                ))
+              )}
             </div>
-          ) : (
-            todos.map((todo) => (
-              <TodoItem
-                key={todo.id}
-                id={todo.id}
-                text={todo.text}
-                completed={todo.completed}
-                dueDate={todo.dueDate}
-                priority={todo.priority}
-                onToggle={toggleTodo}
-                onDelete={deleteTodo}
-                onEdit={(id) => {
-                  const todoToEdit = todos.find((t) => t.id === id);
-                  if (todoToEdit) {
-                    setEditingTodo({
-                      id,
-                      text: todoToEdit.text,
-                      dueDate: todoToEdit.dueDate,
-                      priority: todoToEdit.priority,
-                    });
-                  }
-                }}
-              />
-            ))
-          )}
-        </div>
+          </SortableContext>
+        </DndContext>
 
         {/* Footer Stats */}
         {counts.all > 0 && (

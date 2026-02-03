@@ -87,6 +87,20 @@ export const useTodos = () => {
     });
   }, []);
 
+  const reorderTodos = useCallback((activeId: string, overId: string) => {
+    setTodos((prev) => {
+      const oldIndex = prev.findIndex((todo) => todo.id === activeId);
+      const newIndex = prev.findIndex((todo) => todo.id === overId);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      
+      const updated = [...prev];
+      const [removed] = updated.splice(oldIndex, 1);
+      updated.splice(newIndex, 0, removed);
+      saveTodos(updated);
+      return updated;
+    });
+  }, []);
+
   const filteredTodos = useMemo(() => {
     switch (filter) {
       case "active":
@@ -115,6 +129,7 @@ export const useTodos = () => {
     toggleTodo,
     updateTodo,
     deleteTodo,
+    reorderTodos,
     counts,
   };
 };
